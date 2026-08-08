@@ -1,4 +1,4 @@
-import React from 'react';
+// import React from 'react';
 import { MonthCircle } from './MonthCircle';
 import { CenterSymbols } from './CenterSymbols';
 import { theme } from '../constants/theme';

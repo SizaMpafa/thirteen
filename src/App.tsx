@@ -1,4 +1,4 @@
-import React from 'react';
+// import React from 'react';
 import { useCalendar } from './hooks/useCalendar';
 import { ConstellationLayout } from './components/ConstellationLayout';
 import { LoadingSpinner } from './components/LoadingSpinner';
