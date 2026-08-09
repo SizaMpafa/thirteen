@@ -12,7 +12,6 @@ interface Props {
 }
 
 export function ConstellationLayout({ past, present, future }: Props) {
-  // Build the 13-month array: present (top), future (right side), past (bottom-left)
   const allMonths = [
     { ...present, position: 'present' as const, number: 2 },
     ...future.map((m, i) => ({
@@ -23,14 +22,15 @@ export function ConstellationLayout({ past, present, future }: Props) {
     { ...past, position: 'past' as const, number: 1 },
   ];
 
-  const radius = 200;
-  const centerX = 350;
-  const centerY = 350;
+  const radius = 300;                 // increased from 260
+  const centerX = 450;                // adjusted for larger viewBox
+  const centerY = 450;
+  const circleSize = 130;             // increased from 100
   const total = allMonths.length;
 
   return (
     <div style={styles.wrapper}>
-      <svg viewBox="0 0 700 700" width="100%" height="100%" style={styles.svg}>
+      <svg viewBox="0 0 900 900" width="100%" height="100%" style={styles.svg}>
         <circle cx={centerX} cy={centerY} r={radius + 20} fill="none" stroke={theme.borderFuture} strokeWidth="1" strokeDasharray="4 4" />
 
         {allMonths.map((month, index) => {
@@ -40,10 +40,10 @@ export function ConstellationLayout({ past, present, future }: Props) {
           return (
             <foreignObject
               key={index}
-              x={x - 60}  // increased size to fit mini calendar
-              y={y - 60}
-              width={120}
-              height={120}
+              x={x - circleSize / 2}
+              y={y - circleSize / 2}
+              width={circleSize}
+              height={circleSize}
             >
               <MonthCircle
                 month={month.month}
@@ -58,7 +58,7 @@ export function ConstellationLayout({ past, present, future }: Props) {
           );
         })}
 
-        <foreignObject x={centerX - 40} y={centerY - 40} width={80} height={80}>
+        <foreignObject x={centerX - 50} y={centerY - 50} width={100} height={100}>
           <CenterSymbols />
         </foreignObject>
       </svg>
@@ -77,15 +77,13 @@ export function ConstellationLayout({ past, present, future }: Props) {
   );
 }
 
-// styles object (unchanged, but note the foreignObject size increased)
-
 const styles = {
   wrapper: {
     display: 'flex',
     flexDirection: 'column' as const,
     alignItems: 'center',
     width: '100%',
-    maxWidth: '800px',
+    maxWidth: '900px',
     margin: '0 auto',
   },
   svg: {
@@ -93,20 +91,20 @@ const styles = {
     width: '100%',
     height: 'auto',
     aspectRatio: '1/1',
-    maxWidth: '700px',
+    maxWidth: '850px',
   },
   footer: {
-    marginTop: '20px',
+    marginTop: '30px',
     textAlign: 'center' as const,
   },
   tagline: {
-    fontSize: '1.2rem',
+    fontSize: '1.4rem',
     fontWeight: 'bold',
     color: theme.gold,
     marginBottom: '4px',
   },
   credit: {
-    fontSize: '0.9rem',
+    fontSize: '1rem',
     color: theme.textSecondary,
   },
 };

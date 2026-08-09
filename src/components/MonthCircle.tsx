@@ -9,33 +9,36 @@ interface Props {
   position: 'past' | 'present' | 'future';
   number: number;
   days: number[];
-  firstDayOfWeek: number;  // 0 = Sunday
+  firstDayOfWeek: number;
   totalDays: number;
 }
 
-// Weekday abbreviations (Sun, Mon, ...)
 const WEEKDAY_SHORT = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
 
-export function MonthCircle({ 
-  month, year, position, number, days, firstDayOfWeek, totalDays 
+export function MonthCircle({
+  month,
+  year,
+  position,
+  number,
+  days,
+  firstDayOfWeek,
+  totalDays,
 }: Props) {
   const monthName = getMonthName(month);
 
-  // Build a 2D array of weeks (each week has 7 slots, with null for empty days)
+  // Build weeks grid
   const weeks: (number | null)[][] = [];
   let currentWeek: (number | null)[] = [];
-  // Fill initial empty slots before the first day
   for (let i = 0; i < firstDayOfWeek; i++) {
     currentWeek.push(null);
   }
-  for (let day of days) {
+  for (const day of days) {
     currentWeek.push(day);
     if (currentWeek.length === 7) {
       weeks.push(currentWeek);
       currentWeek = [];
     }
   }
-  // Fill remaining slots in the last week with null
   while (currentWeek.length < 7) {
     currentWeek.push(null);
   }
@@ -43,7 +46,6 @@ export function MonthCircle({
     weeks.push(currentWeek);
   }
 
-  // Styles for past, present, future
   const getStyles = () => {
     switch (position) {
       case 'past':
@@ -61,7 +63,7 @@ export function MonthCircle({
           borderColor: theme.borderPresent,
           textColor: theme.text,
           borderWidth: 3,
-          boxShadow: `0 0 20px ${theme.gold}`,
+          boxShadow: `0 0 30px ${theme.gold}`,
           filter: 'none',
         };
       case 'future':
@@ -70,7 +72,7 @@ export function MonthCircle({
           borderColor: theme.futureBorder,
           textColor: theme.futureText,
           borderWidth: 2,
-          boxShadow: `0 0 15px ${theme.futureBorder}`,
+          boxShadow: `0 0 20px ${theme.futureBorder}`,
           filter: 'none',
           animation: 'futurePulse 2s ease-in-out infinite',
         };
@@ -108,12 +110,12 @@ export function MonthCircle({
         flexDirection: 'column',
         justifyContent: 'center',
         alignItems: 'center',
-        padding: '6px',
+        padding: '8px',
         boxSizing: 'border-box',
         color: textColor,
-        fontSize: '0.6rem',
+        fontSize: '0.7rem',
         textAlign: 'center',
-        lineHeight: 1.2,
+        lineHeight: 1.3,
         boxShadow,
         filter,
         animation,
@@ -122,25 +124,28 @@ export function MonthCircle({
         overflow: 'hidden',
       }}
     >
-      {/* Month name and year */}
-      <div style={{ fontWeight: 'bold', fontSize: '0.75rem', marginBottom: '2px' }}>
+      <div style={{ fontWeight: 'bold', fontSize: '0.85rem', marginBottom: '2px' }}>
         {monthName} {year}
       </div>
 
-      {/* Mini calendar grid */}
-      <div style={{ width: '100%', display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '1px' }}>
-        {/* Weekday headers */}
+      <div
+        style={{
+          width: '100%',
+          display: 'grid',
+          gridTemplateColumns: 'repeat(7, 1fr)',
+          gap: '1px',
+          fontSize: '0.5rem',
+        }}
+      >
         {WEEKDAY_SHORT.map((wd) => (
-          <div key={wd} style={{ fontSize: '0.45rem', opacity: 0.6, fontWeight: 'bold' }}>
+          <div key={wd} style={{ opacity: 0.6, fontWeight: 'bold' }}>
             {wd}
           </div>
         ))}
-        {/* Day numbers */}
         {weeks.flat().map((day, idx) => (
           <div
             key={idx}
             style={{
-              fontSize: '0.45rem',
               opacity: day ? 1 : 0,
               padding: '1px 0',
               lineHeight: 1,
@@ -151,8 +156,7 @@ export function MonthCircle({
         ))}
       </div>
 
-      {/* Position indicator (small) */}
-      {/* <div style={{ fontSize: '0.45rem', opacity: 0.5, marginTop: '2px' }}>
+      {/* <div style={{ fontSize: '0.5rem', opacity: 0.5, marginTop: '2px' }}>
         {number}/13
       </div> */}
     </div>
