@@ -1,5 +1,4 @@
 // src/components/ConstellationLayout.tsx
-// import React from 'react';
 import { MonthCircle } from './MonthCircle';
 import { CenterSymbols } from './CenterSymbols';
 import { theme } from '../constants/theme';
@@ -22,16 +21,16 @@ export function ConstellationLayout({ past, present, future }: Props) {
     { ...past, position: 'past' as const, number: 1 },
   ];
 
-  const radius = 300;                 // increased from 260
-  const centerX = 450;                // adjusted for larger viewBox
-  const centerY = 450;
-  const circleSize = 130;             // increased from 100
+const radius = 400;
+const centerX = 525;
+const centerY = 525;
+const circleSize = 180;           // bigger circles
   const total = allMonths.length;
 
   return (
     <div style={styles.wrapper}>
-      <svg viewBox="0 0 900 900" width="100%" height="100%" style={styles.svg}>
-        <circle cx={centerX} cy={centerY} r={radius + 20} fill="none" stroke={theme.borderFuture} strokeWidth="1" strokeDasharray="4 4" />
+      <svg viewBox="0 0 1050 1050" width="100%" height="100%" style={styles.svg}>
+        <circle cx={centerX} cy={centerY} r={radius + 25} fill="none" stroke={theme.borderFuture} strokeWidth="1.5" strokeDasharray="6 6" />
 
         {allMonths.map((month, index) => {
           const angle = (index / total) * 2 * Math.PI - Math.PI / 2;
@@ -58,7 +57,7 @@ export function ConstellationLayout({ past, present, future }: Props) {
           );
         })}
 
-        <foreignObject x={centerX - 50} y={centerY - 50} width={100} height={100}>
+        <foreignObject x={centerX - 55} y={centerY - 55} width={110} height={110}>
           <CenterSymbols />
         </foreignObject>
       </svg>
@@ -83,7 +82,7 @@ const styles = {
     flexDirection: 'column' as const,
     alignItems: 'center',
     width: '100%',
-    maxWidth: '900px',
+    maxWidth: '1000px',
     margin: '0 auto',
   },
   svg: {
@@ -91,7 +90,7 @@ const styles = {
     width: '100%',
     height: 'auto',
     aspectRatio: '1/1',
-    maxWidth: '850px',
+    maxWidth: '950px',
   },
   footer: {
     marginTop: '30px',

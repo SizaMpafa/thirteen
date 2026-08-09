@@ -1,5 +1,4 @@
 // src/components/MonthCircle.tsx
-// import React from 'react';
 import { theme } from '../constants/theme';
 import { getMonthName } from '../constants/months';
 
@@ -19,10 +18,10 @@ export function MonthCircle({
   month,
   year,
   position,
-  number,
+//   number,
   days,
-  firstDayOfWeek,
-  totalDays,
+  firstDayOfWeek
+//   totalDays,
 }: Props) {
   const monthName = getMonthName(month);
 
@@ -63,7 +62,7 @@ export function MonthCircle({
           borderColor: theme.borderPresent,
           textColor: theme.text,
           borderWidth: 3,
-          boxShadow: `0 0 30px ${theme.gold}`,
+          boxShadow: `0 0 40px ${theme.gold}`,
           filter: 'none',
         };
       case 'future':
@@ -72,7 +71,7 @@ export function MonthCircle({
           borderColor: theme.futureBorder,
           textColor: theme.futureText,
           borderWidth: 2,
-          boxShadow: `0 0 20px ${theme.futureBorder}`,
+          boxShadow: `0 0 25px ${theme.futureBorder}`,
           filter: 'none',
           animation: 'futurePulse 2s ease-in-out infinite',
         };
@@ -110,12 +109,12 @@ export function MonthCircle({
         flexDirection: 'column',
         justifyContent: 'center',
         alignItems: 'center',
-        padding: '8px',
+        padding: '12px',
         boxSizing: 'border-box',
         color: textColor,
-        fontSize: '0.7rem',
+        fontSize: '0.75rem',
         textAlign: 'center',
-        lineHeight: 1.3,
+        lineHeight: 1.4,
         boxShadow,
         filter,
         animation,
@@ -124,7 +123,7 @@ export function MonthCircle({
         overflow: 'hidden',
       }}
     >
-      <div style={{ fontWeight: 'bold', fontSize: '0.85rem', marginBottom: '2px' }}>
+      <div style={{ fontWeight: 'bold', fontSize: '0.8rem', marginBottom: '4px' }}>
         {monthName} {year}
       </div>
 
@@ -134,11 +133,11 @@ export function MonthCircle({
           display: 'grid',
           gridTemplateColumns: 'repeat(7, 1fr)',
           gap: '1px',
-          fontSize: '0.5rem',
+          fontSize: '0.45rem',
         }}
       >
         {WEEKDAY_SHORT.map((wd) => (
-          <div key={wd} style={{ opacity: 0.6, fontWeight: 'bold' }}>
+          <div key={wd} style={{ opacity: 0.7, fontWeight: 'bold' }}>
             {wd}
           </div>
         ))}
@@ -147,7 +146,7 @@ export function MonthCircle({
             key={idx}
             style={{
               opacity: day ? 1 : 0,
-              padding: '1px 0',
+              padding: '2px 0',
               lineHeight: 1,
             }}
           >
@@ -155,10 +154,6 @@ export function MonthCircle({
           </div>
         ))}
       </div>
-
-      {/* <div style={{ fontSize: '0.5rem', opacity: 0.5, marginTop: '2px' }}>
-        {number}/13
-      </div> */}
     </div>
   );
 }
