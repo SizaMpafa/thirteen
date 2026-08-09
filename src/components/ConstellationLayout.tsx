@@ -1,17 +1,18 @@
+// src/components/ConstellationLayout.tsx
 // import React from 'react';
 import { MonthCircle } from './MonthCircle';
 import { CenterSymbols } from './CenterSymbols';
 import { theme } from '../constants/theme';
-import type { MonthData } from '../types';
+import type { MonthWithDays } from '../hooks/useCalendar';
 
 interface Props {
-  past: MonthData;
-  present: MonthData;
-  future: MonthData[];
+  past: MonthWithDays;
+  present: MonthWithDays;
+  future: MonthWithDays[];
 }
 
 export function ConstellationLayout({ past, present, future }: Props) {
-  // Build the 13-month array: past (1), present (2), future (11)
+  // Build the 13-month array: present (top), future (right side), past (bottom-left)
   const allMonths = [
     { ...present, position: 'present' as const, number: 2 },
     ...future.map((m, i) => ({
@@ -22,46 +23,45 @@ export function ConstellationLayout({ past, present, future }: Props) {
     { ...past, position: 'past' as const, number: 1 },
   ];
 
-  // Layout parameters for a circular constellation
-  const radius = 200; // radius of the circle
-  const centerX = 350; // center of the SVG viewBox
+  const radius = 200;
+  const centerX = 350;
   const centerY = 350;
   const total = allMonths.length;
 
   return (
     <div style={styles.wrapper}>
       <svg viewBox="0 0 700 700" width="100%" height="100%" style={styles.svg}>
-        {/* Background circle (optional) */}
         <circle cx={centerX} cy={centerY} r={radius + 20} fill="none" stroke={theme.borderFuture} strokeWidth="1" strokeDasharray="4 4" />
 
         {allMonths.map((month, index) => {
-          // Compute angle (starting from top, clockwise)
           const angle = (index / total) * 2 * Math.PI - Math.PI / 2;
           const x = centerX + radius * Math.cos(angle);
           const y = centerY + radius * Math.sin(angle);
           return (
             <foreignObject
               key={index}
-              x={x - 40} // half of circle width
-              y={y - 40}
-              width={80}
-              height={80}
+              x={x - 60}  // increased size to fit mini calendar
+              y={y - 60}
+              width={120}
+              height={120}
             >
               <MonthCircle
                 month={month.month}
                 year={month.year}
                 position={month.position}
                 number={month.number}
+                days={month.days}
+                firstDayOfWeek={month.firstDayOfWeek}
+                totalDays={month.totalDays}
               />
             </foreignObject>
           );
         })}
 
-        {/* Center symbols */}
         <foreignObject x={centerX - 40} y={centerY - 40} width={80} height={80}>
           <CenterSymbols />
         </foreignObject>
-      </svg> 
+      </svg>
 
       <div style={styles.footer}>
         <p style={styles.tagline}>
@@ -73,10 +73,11 @@ export function ConstellationLayout({ past, present, future }: Props) {
         </p>
         <p style={styles.credit}>Spirituality Must Lead</p>
       </div>
-      
     </div>
   );
 }
+
+// styles object (unchanged, but note the foreignObject size increased)
 
 const styles = {
   wrapper: {
