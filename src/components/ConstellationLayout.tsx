@@ -64,11 +64,11 @@ const circleSize = 180;           // bigger circles
 
       <div style={styles.footer}>
         <p style={styles.tagline}>
-          <span style={{ color: theme.pastText }}>Past</span>
+          <span style={{ color: theme.pastText }}>P</span>
           <span style={{ color: theme.textSecondary }}> + </span>
-          <span style={{ color: theme.gold }}>Present</span>
+          <span style={{ color: theme.gold }}>P</span>
           <span style={{ color: theme.textSecondary }}> = </span>
-          <span style={{ color: theme.futureBorder }}>Future</span>
+          <span style={{ color: theme.futureBorder }}>F</span>
         </p>
         <p style={styles.credit}>Spirituality Must Lead</p>
       </div>
