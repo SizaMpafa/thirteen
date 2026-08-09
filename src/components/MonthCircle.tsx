@@ -6,24 +6,67 @@ interface Props {
   month: number;
   year: number;
   position: 'past' | 'present' | 'future';
-  number: number; // 1..13
+  number: number;
 }
 
 export function MonthCircle({ month, year, position, number }: Props) {
   const monthName = getMonthName(month);
 
+  // Past: Sepia, Slate Gray, Faded Ochre
+  // Present: Gold (unchanged)
+  // Future: Electric Blue, Vibrant Teal, Iridescent Silver
   const getStyles = () => {
     switch (position) {
       case 'past':
-        return { backgroundColor: theme.past, borderColor: theme.borderPast, textColor: theme.textSecondary };
+        return {
+            backgroundColor: theme.pastBg,
+            borderColor: theme.pastBorder,
+            textColor: theme.pastText,
+            borderWidth: 2,
+            boxShadow: 'none',
+            filter: 'sepia(0.6) saturate(0.8) brightness(0.9)',
+        };
+
       case 'present':
-        return { backgroundColor: theme.present, borderColor: theme.borderPresent, textColor: theme.text, borderWidth: 3 };
+        return {
+          backgroundColor: theme.present,
+          borderColor: theme.borderPresent,
+          textColor: theme.text,
+          borderWidth: 3,
+          boxShadow: `0 0 20px ${theme.gold}`,
+          filter: 'none',
+        };
+      case 'future':
+        return {
+            backgroundColor: theme.futureBg,
+            borderColor: theme.futureBorder,
+            textColor: theme.futureText,
+            borderWidth: 2,
+            boxShadow: `0 0 15px ${theme.futureBorder}`,
+            filter: 'none',
+            animation: 'futurePulse 2s ease-in-out infinite',
+        };
       default:
-        return { backgroundColor: theme.future, borderColor: theme.borderFuture, textColor: theme.textSecondary };
+        return {
+          backgroundColor: theme.future,
+          borderColor: theme.borderFuture,
+          textColor: theme.textSecondary,
+          borderWidth: 2,
+          boxShadow: 'none',
+          filter: 'none',
+        };
     }
   };
 
-  const { backgroundColor, borderColor, textColor, borderWidth = 2 } = getStyles();
+  const {
+    backgroundColor,
+    borderColor,
+    textColor,
+    borderWidth,
+    boxShadow,
+    filter,
+    animation,
+  } = getStyles();
 
   return (
     <div
@@ -43,7 +86,11 @@ export function MonthCircle({ month, year, position, number }: Props) {
         fontSize: '0.7rem',
         textAlign: 'center',
         lineHeight: 1.2,
-        boxShadow: position === 'present' ? `0 0 15px ${theme.gold}` : 'none',
+        boxShadow,
+        filter,
+        animation,
+        transition: 'all 0.3s ease',
+        cursor: 'default',
       }}
     >
       <div style={{ fontWeight: 'bold', fontSize: '0.8rem' }}>{monthName}</div>

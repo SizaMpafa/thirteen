@@ -13,13 +13,13 @@ interface Props {
 export function ConstellationLayout({ past, present, future }: Props) {
   // Build the 13-month array: past (1), present (2), future (11)
   const allMonths = [
-    { ...past, position: 'past' as const, number: 1 },
     { ...present, position: 'present' as const, number: 2 },
     ...future.map((m, i) => ({
       ...m,
       position: 'future' as const,
       number: i + 3,
     })),
+    { ...past, position: 'past' as const, number: 1 },
   ];
 
   // Layout parameters for a circular constellation
@@ -61,12 +61,19 @@ export function ConstellationLayout({ past, present, future }: Props) {
         <foreignObject x={centerX - 40} y={centerY - 40} width={80} height={80}>
           <CenterSymbols />
         </foreignObject>
-      </svg>
+      </svg> 
 
       <div style={styles.footer}>
-        <p style={styles.tagline}>Past + Present = Future</p>
+        <p style={styles.tagline}>
+          <span style={{ color: theme.pastText }}>Past</span>
+          <span style={{ color: theme.textSecondary }}> + </span>
+          <span style={{ color: theme.gold }}>Present</span>
+          <span style={{ color: theme.textSecondary }}> = </span>
+          <span style={{ color: theme.futureBorder }}>Future</span>
+        </p>
         <p style={styles.credit}>Spirituality Must Lead</p>
       </div>
+      
     </div>
   );
 }

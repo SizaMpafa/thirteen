@@ -13,4 +13,10 @@ export const theme = {
   borderPast: '#666666',
   borderPresent: '#f39c12',
   borderFuture: '#444444',
+  pastText: '#C68E17',        // faded ochre
+  pastBorder: '#708090',      // muted slate gray
+  pastBg: '#3D2B1F',          // dark sepia
+  futureText: '#E0E8F0',      // iridescent silver
+  futureBorder: '#00D4FF',    // electric blue
+  futureBg: 'rgba(0, 212, 255, 0.08)'
 };
