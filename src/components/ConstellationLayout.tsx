@@ -1,6 +1,6 @@
 // src/components/ConstellationLayout.tsx
 import { MonthCircle } from './MonthCircle';
-import { CenterSymbols } from './CenterSymbols';
+// import { CenterSymbols } from './CenterSymbols';
 import { CenterText } from './CenterText';
 import { theme } from '../constants/theme';
 import type { MonthWithDays } from '../hooks/useCalendar';
