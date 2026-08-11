@@ -33,28 +33,33 @@ export function useCalendar() {
   const [data, setData] = useState<CalendarData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [today, setToday] = useState<{ year: number; month: number; day: number; weekday: string } | null>(null);
 
   useEffect(() => {
     let isMounted = true;
     const load = async () => {
       try {
         await init();
-        const today = AfricanDate.today();
-        const currentMonth = today.month;
-        const currentYear = today.year;
+        const todayDate = AfricanDate.today();
+        const currentMonth = todayDate.month;
+        const currentYear = todayDate.year;
 
         // Helper: build a month object with calendar grid
         const buildMonth = (month: number, year: number): MonthWithDays => {
-          // Create an AfricanDate for the 1st of this month
           const firstDate = new AfricanDate(year, month, 1);
-          const totalDays = firstDate.days_in_month();          // returns number
-          const weekdayStr = firstDate.weekday();              // returns "Sunday", etc.
-          const firstDayOfWeek = weekdayToIndex(weekdayStr);   // 0 = Sunday
-
-          // Build array of day numbers (1..totalDays)
+          const totalDays = firstDate.days_in_month();
+          const weekdayStr = firstDate.weekday();
+          const firstDayOfWeek = weekdayToIndex(weekdayStr);
           const days = Array.from({ length: totalDays }, (_, i) => i + 1);
-
           return { month, year, days, firstDayOfWeek, totalDays };
+        };
+
+        // Today info (for the center display)
+        const todayInfo = {
+          year: todayDate.year,
+          month: todayDate.month,
+          day: todayDate.day,
+          weekday: todayDate.weekday(),
         };
 
         // Past (one month before current)
@@ -83,6 +88,7 @@ export function useCalendar() {
 
         if (isMounted) {
           setData({ past, present, future });
+          setToday(todayInfo);
           setLoading(false);
         }
       } catch (err) {
@@ -98,5 +104,5 @@ export function useCalendar() {
     };
   }, []);
 
-  return { ...data, loading, error };
+  return { ...data, today, loading, error };
 }

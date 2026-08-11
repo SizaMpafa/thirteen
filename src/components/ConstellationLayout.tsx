@@ -1,6 +1,7 @@
 // src/components/ConstellationLayout.tsx
 import { MonthCircle } from './MonthCircle';
 import { CenterSymbols } from './CenterSymbols';
+import { CenterText } from './CenterText';
 import { theme } from '../constants/theme';
 import type { MonthWithDays } from '../hooks/useCalendar';
 
@@ -8,9 +9,10 @@ interface Props {
   past: MonthWithDays;
   present: MonthWithDays;
   future: MonthWithDays[];
+  today: { year: number; month: number; day: number; weekday: string };
 }
 
-export function ConstellationLayout({ past, present, future }: Props) {
+export function ConstellationLayout({ past, present, future, today }: Props) {
   const allMonths = [
     { ...present, position: 'present' as const, number: 2 },
     ...future.map((m, i) => ({
@@ -21,10 +23,10 @@ export function ConstellationLayout({ past, present, future }: Props) {
     { ...past, position: 'past' as const, number: 1 },
   ];
 
-const radius = 400;
-const centerX = 525;
-const centerY = 525;
-const circleSize = 180;           // bigger circles
+  const radius = 400;
+  const centerX = 525;
+  const centerY = 525;
+  const circleSize = 180;
   const total = allMonths.length;
 
   return (
@@ -57,18 +59,29 @@ const circleSize = 180;           // bigger circles
           );
         })}
 
-        <foreignObject x={centerX - 55} y={centerY - 55} width={110} height={110}>
+        {/* Center symbols (Ankh + hourglass) */}
+        <foreignObject x={centerX - 85} y={centerY - 85} width={170} height={170}>
           <CenterSymbols />
+        </foreignObject>
+
+        {/* Date & time above the center */}
+        <foreignObject x={centerX - 180} y={centerY - 220} width={360} height={80}>
+          <CenterText
+            year={today.year}
+            month={today.month}
+            day={today.day}
+            weekday={today.weekday}
+          />
         </foreignObject>
       </svg>
 
       <div style={styles.footer}>
         <p style={styles.tagline}>
-          <span style={{ color: theme.pastText }}>Past</span>
+          <span style={{ color: theme.pastText }}>P</span>
           <span style={{ color: theme.textSecondary }}> + </span>
-          <span style={{ color: theme.gold }}>Present</span>
+          <span style={{ color: theme.gold }}>P</span>
           <span style={{ color: theme.textSecondary }}> = </span>
-          <span style={{ color: theme.futureBorder }}>Future</span>
+          <span style={{ color: theme.futureBorder }}>F</span>
         </p>
         <p style={styles.credit}>Spirituality Must Lead</p>
       </div>

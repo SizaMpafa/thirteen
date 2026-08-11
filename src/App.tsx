@@ -1,11 +1,10 @@
-// import React from 'react';
 import { useCalendar } from './hooks/useCalendar';
 import { ConstellationLayout } from './components/ConstellationLayout';
 import { LoadingSpinner } from './components/LoadingSpinner';
 import { theme } from './constants/theme';
 
 export default function App() {
-  const { past, present, future, loading, error } = useCalendar();
+  const { past, present, future, today, loading, error } = useCalendar();
 
   if (loading) {
     return (
@@ -25,7 +24,7 @@ export default function App() {
     );
   }
 
-  if (!past || !present || !future) {
+  if (!past || !present || !future || !today) {
     return (
       <div style={styles.center}>
         <p style={{ color: theme.textSecondary }}>No calendar data available.</p>
@@ -35,7 +34,12 @@ export default function App() {
 
   return (
     <div style={styles.container}>
-      <ConstellationLayout past={past} present={present} future={future} />
+      <ConstellationLayout
+        past={past}
+        present={present}
+        future={future}
+        today={today}
+      />
     </div>
   );
 }
