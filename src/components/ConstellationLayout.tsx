@@ -60,9 +60,14 @@ export function ConstellationLayout({ past, present, future, today }: Props) {
         })}
 
         {/* Center symbols (Ankh + hourglass) */}
-        <foreignObject x={centerX - 85} y={centerY - 85} width={170} height={170}>
-          <CenterSymbols />
-        </foreignObject>
+        <image
+          href="/center-symbol.png"
+          x={centerX - 85}
+          y={centerY - 85}
+          width={170}
+          height={170}
+          style={{ filter: 'drop-shadow(0 0 20px rgba(243,156,18,0.3))' }}
+        />
 
         {/* Date & time above the center */}
         <foreignObject x={centerX - 180} y={centerY - 220} width={360} height={80}>
