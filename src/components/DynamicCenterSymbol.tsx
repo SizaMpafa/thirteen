@@ -1,19 +1,17 @@
 // src/components/DynamicCenterSymbol.tsx
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 
-const DROPLET_COUNT = 12; // number of droplets in the bottom chamber
+const DROPLET_COUNT = 12;
 
 export function DynamicCenterSymbol() {
   const [time, setTime] = useState(new Date());
-  const [droplets, setDroplets] = useState<{ id: number; x: number; y: number; size: number; speed: number; phase: number }[]>([]);
-  const [animationFrame, setAnimationFrame] = useState(0);
+  const [droplets, setDroplets] = useState<{ id: number; x: number; size: number; speed: number; phase: number }[]>([]);
 
   useEffect(() => {
     // Initialize droplets with random properties
     const initDroplets = Array.from({ length: DROPLET_COUNT }, (_, i) => ({
       id: i,
-      x: (Math.random() - 0.5) * 20, // offset from center (px)
-      y: 0, // will be computed
+      x: (Math.random() - 0.5) * 20,
       size: 1.5 + Math.random() * 2,
       speed: 0.2 + Math.random() * 0.3,
       phase: Math.random() * 2 * Math.PI,
@@ -21,15 +19,11 @@ export function DynamicCenterSymbol() {
     setDroplets(initDroplets);
 
     const interval = setInterval(() => setTime(new Date()), 1000);
-    const frameInterval = setInterval(() => setAnimationFrame(prev => prev + 1), 50); // ~20fps for droplets
-    return () => {
-      clearInterval(interval);
-      clearInterval(frameInterval);
-    };
+    return () => clearInterval(interval);
   }, []);
 
   const seconds = time.getHours() * 3600 + time.getMinutes() * 60 + time.getSeconds();
-  const progress = seconds / 86400; // 0–1 over 24h
+  const progress = seconds / 86400;
 
   const size = 170;
   const centerX = size / 2;
@@ -43,19 +37,17 @@ export function DynamicCenterSymbol() {
   // Bottom water level: increases from empty to full
   const bottomWaterY = hourglassBottomY - progress * (hourglassBottomY - neckY);
 
-  // Wave offset for surface ripple (time-based)
-  const waveOffset = (time.getSeconds() / 60) * 2 * Math.PI; // one full wave per minute
+  // Wave offset
+  const waveOffset = (time.getSeconds() / 60) * 2 * Math.PI;
 
-  // Droplet positions – they fall from neck to bottom over time
+  // Droplet position function – uses Date.now() to animate continuously
   const getDropletY = (phase: number, speed: number) => {
-    const cycleDuration = 3 + speed * 3; // seconds per fall
-    const progressInCycle = ((Date.now() / 1000) * speed + phase) % 1; // 0 at neck, 1 at bottom
+    const progressInCycle = ((Date.now() / 1000) * speed + phase) % 1;
     return neckY + progressInCycle * (hourglassBottomY - neckY);
   };
 
   return (
     <div style={{ position: 'relative', width: '100%', height: '100%' }}>
-      {/* Your beautiful image (no water) */}
       <img
         src="/center-symbol.png"
         alt="Ankh and Hourglass"
@@ -70,7 +62,6 @@ export function DynamicCenterSymbol() {
         }}
       />
 
-      {/* Water overlay with waves and droplets */}
       <svg
         viewBox={`0 0 ${size} ${size}`}
         style={{
@@ -108,7 +99,7 @@ export function DynamicCenterSymbol() {
           </linearGradient>
         </defs>
 
-        {/* ---- TOP WATER (emptying) with wave surface ---- */}
+        {/* Top water */}
         <g clipPath="url(#hourglassTopClip)">
           <rect
             x={centerX - hourglassWidth / 2}
@@ -117,7 +108,6 @@ export function DynamicCenterSymbol() {
             height={neckY - topWaterY}
             fill="url(#waterGradient)"
           />
-          {/* Wave surface on top of the water */}
           <path
             d={`
               M ${centerX - hourglassWidth/2} ${topWaterY}
@@ -134,7 +124,7 @@ export function DynamicCenterSymbol() {
           />
         </g>
 
-        {/* ---- BOTTOM WATER (filling) with wave surface ---- */}
+        {/* Bottom water */}
         <g clipPath="url(#hourglassBottomClip)">
           <rect
             x={centerX - hourglassWidth / 2}
@@ -143,7 +133,6 @@ export function DynamicCenterSymbol() {
             height={hourglassBottomY - bottomWaterY}
             fill="url(#waterGradient)"
           />
-          {/* Wave surface on top of the water */}
           <path
             d={`
               M ${centerX - hourglassWidth/2} ${bottomWaterY}
@@ -160,22 +149,17 @@ export function DynamicCenterSymbol() {
           />
         </g>
 
-        {/* ---- DROPLETS (falling from neck to bottom) ---- */}
-        {droplets.map((d, index) => {
+        {/* Droplets */}
+        {droplets.map((d) => {
           const yPos = getDropletY(d.phase, d.speed);
-          const xPos = centerX + d.x;
-          // Fade out near bottom? Not necessary.
           return (
             <circle
-              key={index}
-              cx={xPos}
+              key={d.id}
+              cx={centerX + d.x}
               cy={yPos}
               r={d.size}
               fill="#4FC3F7"
               opacity="0.7"
-              style={{
-                transition: 'opacity 0.5s',
-              }}
               clipPath="url(#hourglassBottomClip)"
             />
           );
