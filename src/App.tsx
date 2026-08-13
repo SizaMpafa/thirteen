@@ -8,39 +8,51 @@ export default function App() {
 
   if (loading) {
     return (
-      <div style={styles.center}>
-        <LoadingSpinner />
-        <p style={{ color: theme.textSecondary }}>Loading calendar data...</p>
-      </div>
+      <>
+        <div className="nebula-layer" />
+        <div style={styles.center}>
+          <LoadingSpinner />
+          <p style={{ color: theme.textSecondary }}>Loading calendar data...</p>
+        </div>
+      </>
     );
   }
 
   if (error) {
     return (
-      <div style={styles.center}>
-        <p style={{ color: theme.error }}>Error: {error}</p>
-        <p style={{ color: theme.textSecondary }}>Please refresh or try again later.</p>
-      </div>
+      <>
+        <div className="nebula-layer" />
+        <div style={styles.center}>
+          <p style={{ color: theme.error }}>Error: {error}</p>
+          <p style={{ color: theme.textSecondary }}>Please refresh or try again later.</p>
+        </div>
+      </>
     );
   }
 
   if (!past || !present || !future || !today) {
     return (
-      <div style={styles.center}>
-        <p style={{ color: theme.textSecondary }}>No calendar data available.</p>
-      </div>
+      <>
+        <div className="nebula-layer" />
+        <div style={styles.center}>
+          <p style={{ color: theme.textSecondary }}>No calendar data available.</p>
+        </div>
+      </>
     );
   }
 
   return (
-    <div style={styles.container}>
-      <ConstellationLayout
-        past={past}
-        present={present}
-        future={future}
-        today={today}
-      />
-    </div>
+    <>
+      <div className="nebula-layer" />
+      <div style={styles.container}>
+        <ConstellationLayout
+          past={past}
+          present={present}
+          future={future}
+          today={today}
+        />
+      </div>
+    </>
   );
 }
 
@@ -50,7 +62,6 @@ const styles = {
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
-    ...theme.nebulaBackground,
     padding: '20px',
   },
   center: {
@@ -59,7 +70,6 @@ const styles = {
     flexDirection: 'column' as const,
     justifyContent: 'center',
     alignItems: 'center',
-    ...theme.nebulaBackground,
     padding: '20px',
   },
 };
