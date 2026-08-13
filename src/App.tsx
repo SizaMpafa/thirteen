@@ -50,7 +50,7 @@ const styles = {
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: theme.background,
+    ...theme.nebulaBackground,
     padding: '20px',
   },
   center: {
@@ -59,7 +59,7 @@ const styles = {
     flexDirection: 'column' as const,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: theme.background,
+    ...theme.nebulaBackground,
     padding: '20px',
   },
 };
