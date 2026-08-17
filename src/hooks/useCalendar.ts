@@ -1,5 +1,5 @@
 // src/hooks/useCalendar.ts
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import init, { WasmAfricanDate as AfricanDate } from '@siza_m_official/afri-spirit-calendar-js';
 import type { MonthData } from '../types';
 
@@ -29,22 +29,41 @@ const weekdayToIndex = (wd: string): number => {
   return map[wd] ?? 0;
 };
 
+// Global flag to prevent multiple initializations
+let wasmInitialized = false;
+
 export function useCalendar() {
   const [data, setData] = useState<CalendarData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [today, setToday] = useState<{ year: number; month: number; day: number; weekday: string } | null>(null);
+  const [isInitialized, setIsInitialized] = useState(wasmInitialized);
+  const isReadyRef = useRef(false);
 
   useEffect(() => {
     let isMounted = true;
     const load = async () => {
       try {
-        await init();
+        if (!wasmInitialized) {
+          await init();
+          wasmInitialized = true;
+          // Small delay to ensure WASM memory is stable
+          await new Promise(resolve => setTimeout(resolve, 100));
+          if (isMounted) {
+            isReadyRef.current = true;
+            setIsInitialized(true);
+          }
+        } else {
+          if (isMounted) {
+            isReadyRef.current = true;
+            setIsInitialized(true);
+          }
+        }
+
         const todayDate = AfricanDate.today();
         const currentMonth = todayDate.month;
         const currentYear = todayDate.year;
 
-        // Helper: build a month object with calendar grid
         const buildMonth = (month: number, year: number): MonthWithDays => {
           const firstDate = new AfricanDate(year, month, 1);
           const totalDays = firstDate.days_in_month();
@@ -54,7 +73,6 @@ export function useCalendar() {
           return { month, year, days, firstDayOfWeek, totalDays };
         };
 
-        // Today info (for the center display)
         const todayInfo = {
           year: todayDate.year,
           month: todayDate.month,
@@ -62,7 +80,6 @@ export function useCalendar() {
           weekday: todayDate.weekday(),
         };
 
-        // Past (one month before current)
         let pastMonth = currentMonth - 1;
         let pastYear = currentYear;
         if (pastMonth < 1) {
@@ -70,11 +87,8 @@ export function useCalendar() {
           pastYear -= 1;
         }
         const past = buildMonth(pastMonth, pastYear);
-
-        // Present
         const present = buildMonth(currentMonth, currentYear);
 
-        // Future (11 months)
         const future: MonthWithDays[] = [];
         for (let i = 1; i <= 11; i++) {
           let m = currentMonth + i;
@@ -104,5 +118,23 @@ export function useCalendar() {
     };
   }, []);
 
-  return { ...data, today, loading, error };
+  // Get all months of a given year – uses the ref to ensure WASM is ready
+  const getYearMonths = useCallback((year: number): MonthWithDays[] => {
+    if (!isReadyRef.current) {
+      console.warn('WASM not ready yet');
+      return [];
+    }
+    const months: MonthWithDays[] = [];
+    for (let month = 1; month <= 12; month++) {
+      const firstDate = new AfricanDate(year, month, 1);
+      const totalDays = firstDate.days_in_month();
+      const weekdayStr = firstDate.weekday();
+      const firstDayOfWeek = weekdayToIndex(weekdayStr);
+      const days = Array.from({ length: totalDays }, (_, i) => i + 1);
+      months.push({ month, year, days, firstDayOfWeek, totalDays });
+    }
+    return months;
+  }, []); // No dependency – ref is stable
+
+  return { ...data, today, loading, error, getYearMonths, isInitialized: isReadyRef.current };
 }

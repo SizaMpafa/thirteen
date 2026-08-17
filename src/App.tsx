@@ -1,10 +1,16 @@
+// src/App.tsx
+import { useState } from 'react';
 import { useCalendar } from './hooks/useCalendar';
 import { ConstellationLayout } from './components/ConstellationLayout';
+import { YearView } from './components/YearView';
+import { WhyView } from './components/WhyView';
+import { Navigation } from './components/Navigation';
 import { LoadingSpinner } from './components/LoadingSpinner';
 import { theme } from './constants/theme';
 
 export default function App() {
   const { past, present, future, today, loading, error } = useCalendar();
+  const [currentTab, setCurrentTab] = useState<'dashboard' | 'why' | 'year'>('dashboard');
 
   if (loading) {
     return (
@@ -41,16 +47,34 @@ export default function App() {
     );
   }
 
-  return (
-    <>
-      <div className="nebula-layer" />
-      <div style={styles.container}>
+  let content;
+  switch (currentTab) {
+    case 'dashboard':
+      content = (
         <ConstellationLayout
           past={past}
           present={present}
           future={future}
           today={today}
         />
+      );
+      break;
+    case 'why':
+      content = <WhyView />;
+      break;
+    case 'year':
+      content = <YearView initialYear={today.year} />;
+      break;
+    default:
+      content = null;
+  }
+
+  return (
+    <>
+      <div className="nebula-layer" />
+      <div style={styles.container}>
+        {content}
+        <Navigation currentTab={currentTab} setTab={setCurrentTab} />
       </div>
     </>
   );
@@ -60,9 +84,10 @@ const styles = {
   container: {
     minHeight: '100vh',
     display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: '20px',
+    flexDirection: 'column' as const,
+    backgroundColor: 'transparent',
+    position: 'relative' as const,
+    zIndex: 1,
   },
   center: {
     minHeight: '100vh',
@@ -70,6 +95,9 @@ const styles = {
     flexDirection: 'column' as const,
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: 'transparent',
     padding: '20px',
+    position: 'relative' as const,
+    zIndex: 1,
   },
 };
