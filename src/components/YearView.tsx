@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { theme } from '../constants/theme';
 import { getMonthName } from '../constants/months';
 import { useCalendar } from '../hooks/useCalendar';
+import { useMediaQuery } from '../hooks/useMediaQuery';
 
 interface YearViewProps {
   initialYear?: number;
@@ -16,14 +17,16 @@ export function YearView({ initialYear }: YearViewProps) {
   const [months, setMonths] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Set the year to the African current year once `today` is available
+  // Must call hooks inside the component
+  const isMobile = useMediaQuery('(max-width: 768px)');
+  const gridCols = isMobile ? 2 : 4;
+
   useEffect(() => {
     if (today && !initialYear) {
       setYear(today.year);
     }
   }, [today, initialYear]);
 
-  // Compute months when year changes and WASM is ready
   useEffect(() => {
     let isMounted = true;
     const loadData = async () => {
@@ -66,7 +69,6 @@ export function YearView({ initialYear }: YearViewProps) {
     }
   };
 
-  // Helper to check if a given day is today
   const isToday = (month: number, day: number, y: number) => {
     if (!today) return false;
     return today.year === y && today.month === month && today.day === day;
@@ -140,7 +142,7 @@ export function YearView({ initialYear }: YearViewProps) {
         <button onClick={handleNextYear} style={styles.navButton}>›</button>
         <button onClick={handleToday} style={styles.todayButton}>Today</button>
       </div>
-      <div style={styles.gridContainer}>
+      <div style={{ ...styles.gridContainer, gridTemplateColumns: `repeat(${gridCols}, 1fr)` }}>
         {months.map(renderMonthGrid)}
       </div>
     </div>
@@ -188,7 +190,6 @@ const styles = {
   },
   gridContainer: {
     display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
     gap: '20px',
   },
   monthCard: {

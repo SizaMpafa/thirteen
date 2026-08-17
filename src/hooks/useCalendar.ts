@@ -15,7 +15,6 @@ interface CalendarData {
   future: MonthWithDays[];
 }
 
-// Helper to convert weekday string to index (0 = Sunday)
 const weekdayToIndex = (wd: string): number => {
   const map: Record<string, number> = {
     Sunday: 0,
@@ -29,7 +28,6 @@ const weekdayToIndex = (wd: string): number => {
   return map[wd] ?? 0;
 };
 
-// Global flag to prevent multiple initializations
 let wasmInitialized = false;
 
 export function useCalendar() {
@@ -37,7 +35,6 @@ export function useCalendar() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [today, setToday] = useState<{ year: number; month: number; day: number; weekday: string } | null>(null);
-  const [isInitialized, setIsInitialized] = useState(wasmInitialized);
   const isReadyRef = useRef(false);
 
   useEffect(() => {
@@ -51,12 +48,10 @@ export function useCalendar() {
           await new Promise(resolve => setTimeout(resolve, 100));
           if (isMounted) {
             isReadyRef.current = true;
-            setIsInitialized(true);
           }
         } else {
           if (isMounted) {
             isReadyRef.current = true;
-            setIsInitialized(true);
           }
         }
 
@@ -118,7 +113,6 @@ export function useCalendar() {
     };
   }, []);
 
-  // Get all months of a given year – uses the ref to ensure WASM is ready
   const getYearMonths = useCallback((year: number): MonthWithDays[] => {
     if (!isReadyRef.current) {
       console.warn('WASM not ready yet');
@@ -134,7 +128,7 @@ export function useCalendar() {
       months.push({ month, year, days, firstDayOfWeek, totalDays });
     }
     return months;
-  }, []); // No dependency – ref is stable
+  }, []);
 
   return { ...data, today, loading, error, getYearMonths, isInitialized: isReadyRef.current };
 }

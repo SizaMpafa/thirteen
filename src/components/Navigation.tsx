@@ -8,13 +8,13 @@ interface Props {
 
 export function Navigation({ currentTab, setTab }: Props) {
   const tabs = [
-    { id: 'dashboard' as const, label: '🌌', tooltip: 'Constellation' },
-    { id: 'why' as const, label: '📖', tooltip: 'Why August' },
-    { id: 'year' as const, label: '📅', tooltip: 'Year View' },
+    { id: 'dashboard' as const, label: 'Home', icon: '🌌' },
+    { id: 'why' as const, label: 'Why August', icon: '📖' },
+    { id: 'year' as const, label: 'Year', icon: '📅' },
   ];
 
   return (
-    <div style={styles.container}>
+    <nav style={styles.nav}>
       {tabs.map((tab) => (
         <button
           key={tab.id}
@@ -24,36 +24,45 @@ export function Navigation({ currentTab, setTab }: Props) {
             backgroundColor: currentTab === tab.id ? theme.gold : 'transparent',
             color: currentTab === tab.id ? '#1a1a2e' : theme.text,
           }}
-          title={tab.tooltip}
         >
-          {tab.label}
+          <span style={styles.icon}>{tab.icon}</span>
+          <span style={styles.label}>{tab.label}</span>
         </button>
       ))}
-    </div>
+    </nav>
   );
 }
 
 const styles = {
-  container: {
+  nav: {
     display: 'flex',
     justifyContent: 'center',
-    gap: '20px',
-    padding: '16px 0',
-    background: 'rgba(0,0,0,0.3)',
-    position: 'sticky' as const,
-    bottom: 0,
-    width: '100%',
-    zIndex: 10,
+    gap: '8px',
+    padding: '12px 16px',
+    background: 'rgba(0,0,0,0.5)',
     backdropFilter: 'blur(10px)',
+    position: 'sticky' as const,
+    top: 0,
+    zIndex: 10,
+    flexWrap: 'wrap' as const,
   },
   button: {
-    fontSize: '1.8rem',
-    padding: '8px 20px',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '6px',
+    padding: '8px 16px',
     border: 'none',
-    borderRadius: '30px',
+    borderRadius: '20px',
     cursor: 'pointer',
     transition: 'all 0.3s',
     background: 'transparent',
     color: '#888',
+    fontSize: '0.9rem',
+  },
+  icon: {
+    fontSize: '1.2rem',
+  },
+  label: {
+    fontWeight: '500',
   },
 };
