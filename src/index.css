@@ -160,7 +160,7 @@ code {
     260px 260px, 260px 260px, 260px 260px,
     340px 340px, 340px 340px, 340px 340px,
     100% 100%, 100% 100%, 100% 100%;
-  animation: starTwinkle 5s ease-in-out infinite alternate;
+  /* animation: starTwinkle 5s ease-in-out infinite alternate; */
 }
 
 /* Sirius A — one standout bright star with glow */
