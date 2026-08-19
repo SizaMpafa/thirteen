@@ -105,6 +105,7 @@ const styles = {
     height: 'auto',
     aspectRatio: '1/1',
     maxWidth: '950px',
+    marginTop: '150px'
   },
   footer: {
     marginTop: '30px',
