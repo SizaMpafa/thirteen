@@ -7,10 +7,12 @@ import { WhyView } from './components/WhyView';
 import { Navigation } from './components/Navigation';
 import { LoadingSpinner } from './components/LoadingSpinner';
 import { theme } from './constants/theme';
+import { useMediaQuery } from './hooks/useMediaQuery';
 
 export default function App() {
   const { past, present, future, today, loading, error } = useCalendar();
   const [currentTab, setCurrentTab] = useState<'dashboard' | 'why' | 'year'>('dashboard');
+  const isMobile = useMediaQuery('(max-width: 768px)');
 
   if (loading) {
     return (
@@ -72,7 +74,11 @@ export default function App() {
   return (
     <>
       <div className="nebula-layer" />
-      <div style={styles.container}>
+      <div style={{
+        ...styles.container,
+        paddingTop: isMobile ? '0px' : '80px', // desktop top padding for fixed nav
+        paddingBottom: isMobile ? '80px' : '0px',
+      }}>
         {content}
         <Navigation currentTab={currentTab} setTab={setCurrentTab} />
       </div>
