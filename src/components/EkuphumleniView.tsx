@@ -36,6 +36,108 @@ function bearingToDirection(bearing: number): string {
   return dirs[index];
 }
 
+// --- Compass Component ---
+function Compass({
+  bearing,
+  heading,
+}: {
+  bearing: number;
+  heading: number | null;
+}) {
+  const size = 220;
+  const center = size / 2;
+  const radius = 100;
+
+  const bearingRad = (bearing - 90) * (Math.PI / 180); // 0° at top
+  const headingRad = heading !== null ? (heading - 90) * (Math.PI / 180) : null;
+
+  return (
+    <svg
+      width="100%"
+      height="100%"
+      viewBox={`0 0 ${size} ${size}`}
+      style={{ maxWidth: '220px', margin: '0 auto', display: 'block' }}
+    >
+      {/* Outer circle */}
+      <circle
+        cx={center}
+        cy={center}
+        r={radius}
+        fill="rgba(255,255,255,0.02)"
+        stroke={theme.borderFuture}
+        strokeWidth="1.5"
+      />
+
+      {/* Tick marks */}
+      {[0, 45, 90, 135, 180, 225, 270, 315].map((deg) => {
+        const rad = (deg - 90) * (Math.PI / 180);
+        const x1 = center + Math.cos(rad) * (radius - 4);
+        const y1 = center + Math.sin(rad) * (radius - 4);
+        const x2 = center + Math.cos(rad) * radius;
+        const y2 = center + Math.sin(rad) * radius;
+        return (
+          <line
+            key={deg}
+            x1={x1}
+            y1={y1}
+            x2={x2}
+            y2={y2}
+            stroke={theme.textSecondary}
+            strokeWidth="1"
+          />
+        );
+      })}
+
+      {/* Cardinal labels */}
+      <text x={center} y={20} fill={theme.gold} fontSize="14" textAnchor="middle" fontWeight="bold">
+        N
+      </text>
+      <text x={size - 10} y={center + 5} fill={theme.text} fontSize="12" textAnchor="middle">
+        E
+      </text>
+      <text x={center} y={size - 5} fill={theme.text} fontSize="12" textAnchor="middle">
+        S
+      </text>
+      <text x={10} y={center + 5} fill={theme.text} fontSize="12" textAnchor="middle">
+        W
+      </text>
+
+      {/* Compass needle base */}
+      <circle cx={center} cy={center} r="6" fill={theme.gold} />
+
+      {/* Ekuphumleni needle (Red/Orange) */}
+      <line
+        x1={center}
+        y1={center}
+        x2={center + Math.cos(bearingRad) * (radius - 15)}
+        y2={center + Math.sin(bearingRad) * (radius - 15)}
+        stroke="#FF6B6B"
+        strokeWidth="3"
+        strokeLinecap="round"
+      />
+
+      {/* User heading needle (Blue/Gold) */}
+      {headingRad !== null && (
+        <line
+          x1={center}
+          y1={center}
+          x2={center + Math.cos(headingRad) * (radius - 25)}
+          y2={center + Math.sin(headingRad) * (radius - 25)}
+          stroke={theme.gold}
+          strokeWidth="2.5"
+          strokeLinecap="round"
+          opacity="0.9"
+        />
+      )}
+
+      {/* Alignment highlight */}
+      {headingRad !== null && Math.abs(((bearing - (heading ?? 0) + 540) % 360) - 180) < 15 && (
+        <circle cx={center} cy={center} r={radius - 10} fill="none" stroke="#4CAF50" strokeWidth="2" opacity="0.8" />
+      )}
+    </svg>
+  );
+}
+
 export function EkuphumleniView() {
   const { latitude, longitude, heading, error, loading } = useLocation();
 
@@ -75,8 +177,13 @@ export function EkuphumleniView() {
       <p style={styles.subtitle}>Intaba Ephendulayo — The Responding Mountain</p>
 
       <div style={styles.card}>
+        {/* Compass */}
+        <Compass bearing={bearing} heading={heading} />
+
         <p style={styles.label}>Direction to Ekuphumleni:</p>
-        <p style={styles.direction}>{directionName} ({Math.round(bearing)}°)</p>
+        <p style={styles.direction}>
+          {directionName} ({Math.round(bearing)}°)
+        </p>
 
         <p style={styles.label}>Distance:</p>
         <p style={styles.value}>{distance.toFixed(2)} km</p>
@@ -96,9 +203,7 @@ export function EkuphumleniView() {
           </>
         )}
 
-        <p style={styles.coords}>
-          Ekuphumleni: 29°04'31.7"S 27°37'28.3"E
-        </p>
+        <p style={styles.coords}>Ekuphumleni: 29°04'31.7"S 27°37'28.3"E</p>
       </div>
 
       <p style={styles.footer}>P + P = F — Past + Present = Future</p>

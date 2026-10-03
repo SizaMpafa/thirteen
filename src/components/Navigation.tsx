@@ -14,7 +14,7 @@ export function Navigation({ currentTab, setTab }: Props) {
     { id: 'dashboard' as const, label: 'Home', icon: '🌌' },
     { id: 'why' as const, label: 'Why August', icon: '📖' },
     { id: 'year' as const, label: 'Year', icon: '📅' },
-    { id: 'ekuphumleni' as const, label: 'Ekuphumleni', icon: '📍' },
+    { id: 'ekuphumleni' as const, label: 'Ekuphumleni', icon: '🧭' },
 
   ];
 
