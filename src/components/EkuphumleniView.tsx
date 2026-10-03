@@ -206,7 +206,16 @@ export function EkuphumleniView() {
         <p style={styles.coords}>Ekuphumleni: 29°04'31.7"S 27°37'28.3"E</p>
       </div>
 
-      <p style={styles.footer}>P + P = F — Past + Present = Future</p>
+        <div style={styles.footer}>
+              <p style={styles.tagline}>
+                <span style={{ color: theme.pastText }}>P</span>
+                <span style={{ color: theme.textSecondary }}> + </span>
+                <span style={{ color: theme.gold }}>P</span>
+                <span style={{ color: theme.textSecondary }}> = </span>
+                <span style={{ color: theme.futureBorder }}>F</span>
+              </p>
+              <p style={styles.credit}>Spirituality Must Lead</p>
+        </div>
     </div>
   );
 }
@@ -271,5 +280,15 @@ const styles = {
     color: theme.textSecondary,
     fontSize: '1rem',
     fontStyle: 'italic' as const,
+  },
+    tagline: {
+    fontSize: '1.4rem',
+    fontWeight: 'bold',
+    color: theme.gold,
+    marginBottom: '4px',
+  },
+  credit: {
+    fontSize: '1rem',
+    color: theme.textSecondary,
   },
 };

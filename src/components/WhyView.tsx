@@ -59,9 +59,16 @@ export function WhyView() {
         </p>
 
         <p style={styles.greetings}>HAPPY 2027!</p>
-        <p style={styles.signature}>
-          P + P = F
-        </p>
+        <div style={styles.footer}>
+              <p style={styles.tagline}>
+                <span style={{ color: theme.pastText }}>P</span>
+                <span style={{ color: theme.textSecondary }}> + </span>
+                <span style={{ color: theme.gold }}>P</span>
+                <span style={{ color: theme.textSecondary }}> = </span>
+                <span style={{ color: theme.futureBorder }}>F</span>
+              </p>
+              <p style={styles.credit}>Spirituality Must Lead</p>
+        </div>
       </div>
     </div>
   );
@@ -102,5 +109,20 @@ const styles = {
     fontSize: '1.2rem',
     fontWeight: 'bold',
     color: theme.gold,
+  },
+    footer: {
+    color: theme.textSecondary,
+    fontSize: '1rem',
+    fontStyle: 'italic' as const,
+  },
+    tagline: {
+    fontSize: '1.4rem',
+    fontWeight: 'bold',
+    color: theme.gold,
+    marginBottom: '4px',
+  },
+  credit: {
+    fontSize: '1rem',
+    color: theme.textSecondary,
   },
 };
