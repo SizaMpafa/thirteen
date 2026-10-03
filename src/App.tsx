@@ -8,10 +8,11 @@ import { Navigation } from './components/Navigation';
 import { LoadingSpinner } from './components/LoadingSpinner';
 import { theme } from './constants/theme';
 import { useMediaQuery } from './hooks/useMediaQuery';
+import { EkuphumleniView } from './components/EkuphumleniView';
 
 export default function App() {
   const { past, present, future, today, loading, error } = useCalendar();
-  const [currentTab, setCurrentTab] = useState<'dashboard' | 'why' | 'year'>('dashboard');
+  const [currentTab, setCurrentTab] = useState<'dashboard' | 'why' | 'year' | 'ekuphumleni'>('dashboard');
   const isMobile = useMediaQuery('(max-width: 768px)');
 
   if (loading) {
@@ -66,6 +67,9 @@ export default function App() {
       break;
     case 'year':
       content = <YearView initialYear={today.year} />;
+      break;
+    case 'ekuphumleni':
+      content = <EkuphumleniView />;
       break;
     default:
       content = null;

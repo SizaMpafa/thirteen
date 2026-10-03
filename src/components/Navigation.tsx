@@ -3,8 +3,8 @@ import { theme } from '../constants/theme';
 import { useMediaQuery } from '../hooks/useMediaQuery';
 
 interface Props {
-  currentTab: 'dashboard' | 'why' | 'year';
-  setTab: (tab: 'dashboard' | 'why' | 'year') => void;
+  currentTab: 'dashboard' | 'why' | 'year' | 'ekuphumleni';
+  setTab: (tab: 'dashboard' | 'why' | 'year' | 'ekuphumleni') => void;
 }
 
 export function Navigation({ currentTab, setTab }: Props) {
@@ -14,6 +14,8 @@ export function Navigation({ currentTab, setTab }: Props) {
     { id: 'dashboard' as const, label: 'Home', icon: '🌌' },
     { id: 'why' as const, label: 'Why August', icon: '📖' },
     { id: 'year' as const, label: 'Year', icon: '📅' },
+    { id: 'ekuphumleni' as const, label: 'Ekuphumleni', icon: '📍' },
+
   ];
 
   return (
