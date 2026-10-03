@@ -1,4 +1,3 @@
-// src/components/EkuphumleniView.tsx
 import { useMemo } from 'react';
 import { theme } from '../constants/theme';
 import { useLocation } from '../hooks/useLocation';
@@ -93,16 +92,9 @@ function Compass({ bearing, heading }: { bearing: number; heading: number | null
 
 export function EkuphumleniView() {
   const {
-    latitude,
-    longitude,
-    heading,
-    error,
-    loading,
-    compassAvailable,
-    orientationEventFired,
-    headingSource,
-    absoluteSupported,
-    requestCompassPermission,
+    latitude, longitude, heading, error, loading,
+    compassAvailable, orientationEventFired, headingSource, absoluteMode,
+    manualMode, requestCompassPermission, calibrateNorth,
   } = useLocation();
 
   const distance = useMemo(() => {
@@ -126,6 +118,7 @@ export function EkuphumleniView() {
 
   const directionName = bearingToDirection(bearing);
   const isAligned = alignmentOffset !== null && Math.abs(alignmentOffset) < 15;
+  const compassNeedsCalibration = !compassAvailable && headingSource === 'relative';
 
   return (
     <div style={styles.container}>
@@ -135,7 +128,6 @@ export function EkuphumleniView() {
       <div style={styles.card}>
         <Compass bearing={bearing} heading={heading} />
 
-        {/* Diagnostic panel */}
         <div style={styles.statusPanel}>
           <div style={styles.statusRow}>
             <span style={styles.statusLabel}>Orientation events:</span>
@@ -157,32 +149,33 @@ export function EkuphumleniView() {
           </div>
           <div style={styles.statusRow}>
             <span style={styles.statusLabel}>Absolute mode:</span>
-            <span style={absoluteSupported ? styles.statusOk : styles.statusBad}>
-              {absoluteSupported ? 'Yes' : 'No'}
+            <span style={absoluteMode ? styles.statusOk : styles.statusBad}>
+              {absoluteMode ? 'Yes' : 'No'}
             </span>
           </div>
-
-          {!compassAvailable && orientationEventFired && (
-            <p style={styles.diagnosticNote}>
-              Your browser is sending tilt data but no compass. This is a known Android Chrome
-              limitation — the browser is not exposing the magnetometer. Try:
-              <br />• Opening the app in <strong>Chrome</strong> (not in-app browsers)
-              <br />• Enabling location services for the browser
-              <br />• Restarting the browser
-            </p>
-          )}
         </div>
 
-        {!compassAvailable && (
+        {/* Permission button (iOS / fresh start) */}
+        {!compassAvailable && !manualMode && (
           <button onClick={requestCompassPermission} style={styles.permissionButton}>
-            Enable Compass (tap here)
+            Enable Compass
           </button>
         )}
 
+        {/* Manual calibration for Android when alpha is relative */}
+        {compassNeedsCalibration && !manualMode && (
+          <>
+            <p style={styles.hint}>
+              Android Chrome is not exposing the true compass. Face true <strong>North</strong> and tap the button below to calibrate.
+            </p>
+            <button onClick={calibrateNorth} style={styles.permissionButton}>
+              I am Facing North — Calibrate
+            </button>
+          </>
+        )}
+
         <p style={styles.label}>Direction to Ekuphumleni:</p>
-        <p style={styles.direction}>
-          {directionName} ({Math.round(bearing)}°)
-        </p>
+        <p style={styles.direction}>{directionName} ({Math.round(bearing)}°)</p>
 
         <p style={styles.label}>Distance:</p>
         <p style={styles.value}>{distance.toFixed(2)} km</p>
@@ -287,4 +280,11 @@ const styles = {
     background: 'rgba(255,193,7,0.08)',
     borderRadius: '6px',
   },
+  hint: {
+  color: '#FFC107',
+  fontSize: '0.85rem',
+  marginTop: '12px',
+  marginBottom: '8px',
+  lineHeight: 1.4,
+},
 };

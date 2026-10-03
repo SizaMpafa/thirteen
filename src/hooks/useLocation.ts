@@ -8,22 +8,20 @@ interface LocationState {
   error: string | null;
   loading: boolean;
   orientationEventFired: boolean;
-  headingSource: 'webkit' | 'absolute' | 'alpha' | null;
+  absoluteMode: boolean;
+  headingSource: 'webkit' | 'alpha' | 'relative' | null;
   compassAvailable: boolean;
-  absoluteSupported: boolean;
 }
 
-// Extend DeviceOrientationEvent with iOS-only webkitCompassHeading,
-// while keeping `absolute` compatible.
-interface DeviceOrientationEventWithCompass
-  extends Omit<DeviceOrientationEvent, 'absolute'> {
+interface DeviceOrientationEventWithCompass extends DeviceOrientationEvent {
   webkitCompassHeading?: number;
-  absolute?: boolean;
 }
 
 interface DeviceOrientationEventiOS extends DeviceOrientationEvent {
   requestPermission?: () => Promise<'granted' | 'denied'>;
 }
+
+let manualNorthAnchor: number | null = null; // used if we have to calibrate manually
 
 export function useLocation() {
   const [state, setState] = useState<LocationState>({
@@ -33,35 +31,37 @@ export function useLocation() {
     error: null,
     loading: true,
     orientationEventFired: false,
+    absoluteMode: false,
     headingSource: null,
     compassAvailable: false,
-    absoluteSupported: false,
   });
+
+  const [manualMode, setManualMode] = useState(false);
 
   const handleOrientation = useCallback((event: DeviceOrientationEventWithCompass) => {
     let heading: number | null = null;
-    let source: 'webkit' | 'absolute' | 'alpha' | null = null;
+    let source: 'webkit' | 'alpha' | 'relative' | null = null;
 
-    // 1. iOS: webkitCompassHeading
+    // iOS
     if (typeof event.webkitCompassHeading === 'number') {
       heading = event.webkitCompassHeading;
       source = 'webkit';
     }
-    // 2. Android: alpha + absolute === true
+    // Android absolute
     else if (typeof event.alpha === 'number' && event.absolute === true) {
       heading = 360 - event.alpha;
-      source = 'absolute';
+      source = 'alpha';
     }
-    // 3. Fallback: alpha without absolute
+    // Android relative (fallback)
     else if (typeof event.alpha === 'number') {
       heading = 360 - event.alpha;
-      source = 'alpha';
+      source = 'relative';
     }
 
     setState(s => ({
       ...s,
       orientationEventFired: true,
-      absoluteSupported: s.absoluteSupported || event.absolute === true,
+      absoluteMode: event.absolute === true,
       heading: heading !== null ? heading : s.heading,
       headingSource: source ?? s.headingSource,
       compassAvailable: heading !== null ? true : s.compassAvailable,
@@ -78,12 +78,25 @@ export function useLocation() {
           return;
         }
       }
+      // Re-attach listeners
       window.addEventListener('deviceorientationabsolute', handleOrientation as EventListener, true);
       window.addEventListener('deviceorientation', handleOrientation as EventListener, true);
     } catch (err) {
       console.error('Compass permission error:', err);
     }
   }, [handleOrientation]);
+
+  const calibrateNorth = useCallback(() => {
+    // User is currently facing true North. Snapshot that relative alpha.
+    const handler = (event: DeviceOrientationEventWithCompass) => {
+      if (typeof event.alpha === 'number') {
+        manualNorthAnchor = event.alpha;
+        setManualMode(true);
+        window.removeEventListener('deviceorientation', handler, true);
+      }
+    };
+    window.addEventListener('deviceorientation', handler as EventListener, true);
+  }, []);
 
   useEffect(() => {
     if (!navigator.geolocation) {
@@ -109,18 +122,30 @@ export function useLocation() {
       { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
     );
 
-    window.addEventListener('deviceorientationabsolute', handleOrientation as EventListener, true);
-    window.addEventListener('deviceorientation', handleOrientation as EventListener, true);
+    const orientationHandler = handleOrientation as EventListener;
+    window.addEventListener('deviceorientationabsolute', orientationHandler, true);
+    window.addEventListener('deviceorientation', orientationHandler, true);
 
     return () => {
       navigator.geolocation.clearWatch(watchId);
-      window.removeEventListener('deviceorientationabsolute', handleOrientation as EventListener);
-      window.removeEventListener('deviceorientation', handleOrientation as EventListener);
+      window.removeEventListener('deviceorientationabsolute', orientationHandler);
+      window.removeEventListener('deviceorientation', orientationHandler);
     };
   }, [handleOrientation]);
 
+  // If in manual mode, compute heading from the anchor
+  const computedHeading = (() => {
+    if (state.headingSource !== 'relative') return state.heading;
+    if (manualNorthAnchor === null || state.heading === null) return state.heading;
+    // manual offset: alpha_anchor should map to 0° (true north)
+    return ((state.heading - manualNorthAnchor + 360) % 360);
+  })();
+
   return {
     ...state,
+    heading: computedHeading,
+    manualMode,
     requestCompassPermission,
+    calibrateNorth,
   };
 }
