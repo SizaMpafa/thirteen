@@ -1,4 +1,5 @@
-import { useMemo } from 'react';
+// src/components/EkuphumleniView.tsx
+import { useMemo, useState } from 'react';
 import { theme } from '../constants/theme';
 import { useLocation } from '../hooks/useLocation';
 
@@ -29,22 +30,63 @@ function getBearing(lat1: number, lon1: number, lat2: number, lon2: number): num
 }
 
 function bearingToDirection(bearing: number): string {
-  const dirs = ['North', 'North-East', 'East', 'South-East', 'South', 'South-West', 'West', 'North-West'];
+  const dirs = [
+    'North',
+    'North-East',
+    'East',
+    'South-East',
+    'South',
+    'South-West',
+    'West',
+    'North-West',
+  ];
   const index = Math.round((((bearing % 360) + 360) % 360) / 45) % 8;
   return dirs[index];
 }
 
-function Compass({ bearing, heading }: { bearing: number; heading: number | null }) {
-  const size = 220;
+// ---------- Compass (display only) ----------
+function Compass({
+  bearing,
+  heading,
+  manualHeading,
+  manualMode,
+}: {
+  bearing: number;
+  heading: number | null;
+  manualHeading: number;
+  manualMode: boolean;
+}) {
+  const size = 260;
   const center = size / 2;
-  const radius = 100;
+  const radius = 110;
   const bearingRad = (bearing - 90) * (Math.PI / 180);
-  const headingRad = heading !== null ? (heading - 90) * (Math.PI / 180) : null;
-  const aligned = heading !== null && Math.abs(((bearing - heading + 540) % 360) - 180) < 15;
+  const displayHeading = manualMode ? manualHeading : heading;
+  const headingRad =
+    displayHeading !== null ? (displayHeading - 90) * (Math.PI / 180) : null;
+  const aligned =
+    displayHeading !== null &&
+    Math.abs(((bearing - displayHeading + 540) % 360) - 180) < 15;
 
   return (
-    <svg width="100%" height="100%" viewBox={`0 0 ${size} ${size}`} style={{ maxWidth: '220px', margin: '0 auto', display: 'block' }}>
-      <circle cx={center} cy={center} r={radius} fill="rgba(255,255,255,0.02)" stroke={theme.borderFuture} strokeWidth="1.5" />
+    <svg
+      width="100%"
+      height="100%"
+      viewBox={`0 0 ${size} ${size}`}
+      style={{
+        maxWidth: '260px',
+        margin: '0 auto',
+        display: 'block',
+        touchAction: 'none',
+      }}
+    >
+      <circle
+        cx={center}
+        cy={center}
+        r={radius}
+        fill="rgba(255,255,255,0.02)"
+        stroke={theme.borderFuture}
+        strokeWidth="1.5"
+      />
       {[0, 45, 90, 135, 180, 225, 270, 315].map((deg) => {
         const rad = (deg - 90) * (Math.PI / 180);
         return (
@@ -59,11 +101,20 @@ function Compass({ bearing, heading }: { bearing: number; heading: number | null
           />
         );
       })}
-      <text x={center} y={20} fill={theme.gold} fontSize="14" textAnchor="middle" fontWeight="bold">N</text>
-      <text x={size - 10} y={center + 5} fill={theme.text} fontSize="12" textAnchor="middle">E</text>
-      <text x={center} y={size - 5} fill={theme.text} fontSize="12" textAnchor="middle">S</text>
-      <text x={10} y={center + 5} fill={theme.text} fontSize="12" textAnchor="middle">W</text>
+      <text x={center} y={22} fill={theme.gold} fontSize="14" textAnchor="middle" fontWeight="bold">
+        N
+      </text>
+      <text x={size - 12} y={center + 5} fill={theme.text} fontSize="12" textAnchor="middle">
+        E
+      </text>
+      <text x={center} y={size - 6} fill={theme.text} fontSize="12" textAnchor="middle">
+        S
+      </text>
+      <text x={12} y={center + 5} fill={theme.text} fontSize="12" textAnchor="middle">
+        W
+      </text>
       <circle cx={center} cy={center} r="6" fill={theme.gold} />
+      {/* Ekuphumleni bearing (fixed) */}
       <line
         x1={center}
         y1={center}
@@ -73,6 +124,7 @@ function Compass({ bearing, heading }: { bearing: number; heading: number | null
         strokeWidth="3"
         strokeLinecap="round"
       />
+      {/* User heading (auto or manual) */}
       {headingRad !== null && (
         <line
           x1={center}
@@ -85,17 +137,37 @@ function Compass({ bearing, heading }: { bearing: number; heading: number | null
           opacity="0.9"
         />
       )}
-      {aligned && <circle cx={center} cy={center} r={radius - 10} fill="none" stroke="#4CAF50" strokeWidth="2" opacity="0.8" />}
+      {aligned && (
+        <circle
+          cx={center}
+          cy={center}
+          r={radius - 10}
+          fill="none"
+          stroke="#4CAF50"
+          strokeWidth="2"
+          opacity="0.8"
+        />
+      )}
     </svg>
   );
 }
 
+// ---------- Main View ----------
 export function EkuphumleniView() {
   const {
-    latitude, longitude, heading, error, loading,
-    compassAvailable, orientationEventFired, headingSource, absoluteMode,
-    manualMode, requestCompassPermission, calibrateNorth,
+    latitude,
+    longitude,
+    heading,
+    error,
+    loading,
+    compassAvailable,
+    orientationEventFired,
+    headingSource,
+    absoluteMode,
   } = useLocation();
+
+  const [manualHeading, setManualHeading] = useState(0);
+  const [manualMode, setManualMode] = useState(false);
 
   const distance = useMemo(() => {
     if (latitude === null || longitude === null) return null;
@@ -107,43 +179,99 @@ export function EkuphumleniView() {
     return getBearing(latitude, longitude, EKUPHUMLENI_LAT, EKUPHUMLENI_LON);
   }, [latitude, longitude]);
 
-  const alignmentOffset = useMemo(() => {
-    if (heading === null || bearing === null) return null;
-    return ((bearing - heading + 540) % 360) - 180;
-  }, [heading, bearing]);
-
-  if (loading) return <div style={styles.container}>Detecting your location...</div>;
-  if (error) return <div style={styles.container}>Location error: {error}</div>;
-  if (distance === null || bearing === null) return <div style={styles.container}>Awaiting location data...</div>;
+  if (loading)
+    return <div style={styles.container}>Detecting your location...</div>;
+  if (error)
+    return <div style={styles.container}>Location error: {error}</div>;
+  if (distance === null || bearing === null)
+    return <div style={styles.container}>Awaiting location data...</div>;
 
   const directionName = bearingToDirection(bearing);
+  const displayHeading = manualMode ? manualHeading : heading;
+  const alignmentOffset =
+    displayHeading !== null
+      ? ((bearing - displayHeading + 540) % 360) - 180
+      : null;
   const isAligned = alignmentOffset !== null && Math.abs(alignmentOffset) < 15;
-  const compassNeedsCalibration = !compassAvailable && headingSource === 'relative';
 
   return (
     <div style={styles.container}>
       <h1 style={styles.title}>Ekuphumleni Alignment</h1>
-      <p style={styles.subtitle}>Intaba Ephendulayo — The Responding Mountain</p>
+      <p style={styles.subtitle}>
+        Intaba Ephendulayo — The Responding Mountain
+      </p>
 
       <div style={styles.card}>
-        <Compass bearing={bearing} heading={heading} />
+        <Compass
+          bearing={bearing}
+          heading={heading}
+          manualHeading={manualHeading}
+          manualMode={manualMode}
+        />
 
+        {/* Mode toggle */}
+        <div style={styles.modeToggle}>
+          <button
+            onClick={() => setManualMode(false)}
+            style={{
+              ...styles.modeButton,
+              background: !manualMode ? theme.gold : 'transparent',
+              color: !manualMode ? '#1a1a2e' : theme.text,
+            }}
+          >
+            Auto Compass
+          </button>
+          <button
+            onClick={() => setManualMode(true)}
+            style={{
+              ...styles.modeButton,
+              background: manualMode ? theme.gold : 'transparent',
+              color: manualMode ? '#1a1a2e' : theme.text,
+            }}
+          >
+            Manual Dial
+          </button>
+        </div>
+
+        {/* Manual dial slider */}
+        {manualMode && (
+          <div style={styles.sliderWrap}>
+            <p style={styles.hint}>Drag to set the direction you are facing</p>
+            <input
+              type="range"
+              min={0}
+              max={359}
+              value={manualHeading}
+              onChange={(e) => setManualHeading(parseInt(e.target.value, 10))}
+              style={styles.slider}
+            />
+            <p style={styles.hint}>
+              You are facing: {manualHeading}° ({bearingToDirection(manualHeading)})
+            </p>
+          </div>
+        )}
+
+        {/* Diagnostics */}
         <div style={styles.statusPanel}>
           <div style={styles.statusRow}>
             <span style={styles.statusLabel}>Orientation events:</span>
-            <span style={orientationEventFired ? styles.statusOk : styles.statusBad}>
+            <span
+              style={orientationEventFired ? styles.statusOk : styles.statusBad}
+            >
               {orientationEventFired ? 'Receiving' : 'No events'}
             </span>
           </div>
           <div style={styles.statusRow}>
-            <span style={styles.statusLabel}>Compass heading:</span>
+            <span style={styles.statusLabel}>Auto compass:</span>
             <span style={heading !== null ? styles.statusOk : styles.statusBad}>
               {heading !== null ? `${Math.round(heading)}°` : 'Not available'}
             </span>
           </div>
           <div style={styles.statusRow}>
             <span style={styles.statusLabel}>Sensor source:</span>
-            <span style={headingSource ? styles.statusOk : styles.statusBad}>
+            <span
+              style={headingSource ? styles.statusOk : styles.statusBad}
+            >
               {headingSource ?? 'None'}
             </span>
           </div>
@@ -155,27 +283,17 @@ export function EkuphumleniView() {
           </div>
         </div>
 
-        {/* Permission button (iOS / fresh start) */}
         {!compassAvailable && !manualMode && (
-          <button onClick={requestCompassPermission} style={styles.permissionButton}>
-            Enable Compass
-          </button>
-        )}
-
-        {/* Manual calibration for Android when alpha is relative */}
-        {compassNeedsCalibration && !manualMode && (
-          <>
-            <p style={styles.hint}>
-              Android Chrome is not exposing the true compass. Face true <strong>North</strong> and tap the button below to calibrate.
-            </p>
-            <button onClick={calibrateNorth} style={styles.permissionButton}>
-              I am Facing North — Calibrate
-            </button>
-          </>
+          <p style={styles.hint}>
+            Your browser is not exposing the compass. Switch to{' '}
+            <strong>Manual Dial</strong> above to align.
+          </p>
         )}
 
         <p style={styles.label}>Direction to Ekuphumleni:</p>
-        <p style={styles.direction}>{directionName} ({Math.round(bearing)}°)</p>
+        <p style={styles.direction}>
+          {directionName} ({Math.round(bearing)}°)
+        </p>
 
         <p style={styles.label}>Distance:</p>
         <p style={styles.value}>{distance.toFixed(2)} km</p>
@@ -195,19 +313,23 @@ export function EkuphumleniView() {
           </>
         )}
 
-        <p style={styles.coords}>Ekuphumleni: 29°04'31.7"S 27°37'28.3"E</p>
+        <p style={styles.coords}>
+          Ekuphumleni: 29°04'31.7"S 27°37'28.3"E
+        </p>
       </div>
 
-        <div style={styles.footer}>
-              <p style={styles.tagline}>
-                <span style={{ color: theme.pastText }}>P</span>
-                <span style={{ color: theme.textSecondary }}> + </span>
-                <span style={{ color: theme.gold }}>P</span>
-                <span style={{ color: theme.textSecondary }}> = </span>
-                <span style={{ color: theme.futureBorder }}>F</span>
-              </p>
-              <p style={styles.credit}>Spirituality Must Lead</p>
-        </div>    </div>
+      {/* Footer — consistent with other views */}
+      <div style={styles.footer}>
+        <p style={styles.tagline}>
+          <span style={{ color: theme.pastText }}>P</span>
+          <span style={{ color: theme.textSecondary }}> + </span>
+          <span style={{ color: theme.gold }}>P</span>
+          <span style={{ color: theme.textSecondary }}> = </span>
+          <span style={{ color: theme.futureBorder }}>F</span>
+        </p>
+        <p style={styles.credit}>Spirituality Must Lead</p>
+      </div>
+    </div>
   );
 }
 
@@ -224,40 +346,24 @@ const styles = {
   card: {
     background: 'rgba(255,255,255,0.05)',
     borderRadius: '16px',
-    padding: '30px',
+    padding: '24px',
     border: `1px solid ${theme.borderFuture}`,
     marginBottom: '30px',
   },
-  label: { color: theme.textSecondary, fontSize: '0.9rem', marginTop: '16px', marginBottom: '4px' },
+  label: {
+    color: theme.textSecondary,
+    fontSize: '0.9rem',
+    marginTop: '16px',
+    marginBottom: '4px',
+  },
   direction: { color: theme.gold, fontSize: '2rem', fontWeight: 'bold' as const },
   value: { color: theme.text, fontSize: '1.5rem', fontWeight: 'bold' as const },
   aligned: { color: '#4CAF50', fontSize: '1.3rem', fontWeight: 'bold' as const },
   offset: { color: '#FFC107', fontSize: '1.3rem', fontWeight: 'bold' as const },
   coords: { color: theme.textSecondary, fontSize: '0.8rem', marginTop: '30px' },
-    footer: {
-    color: theme.textSecondary,
-    fontSize: '1rem',
-    fontStyle: 'italic' as const,
-  },
-    tagline: {
-    fontSize: '1.4rem',
-    fontWeight: 'bold',
-    color: theme.gold,
-    marginBottom: '4px',
-  },
-  credit: {
-    fontSize: '1rem',
-    color: theme.textSecondary,
-  },  permissionButton: {
-    marginTop: '16px',
-    padding: '10px 20px',
-    background: theme.gold,
-    color: '#1a1a2e',
-    border: 'none',
-    borderRadius: '20px',
-    fontWeight: 'bold' as const,
-    cursor: 'pointer',
-  },
+  footer: { color: theme.textSecondary, fontSize: '1rem', fontStyle: 'italic' as const },
+  tagline: { fontSize: '1.4rem', fontWeight: 'bold' as const, color: theme.gold, marginBottom: '4px' },
+  credit: { fontSize: '1rem', color: theme.textSecondary },
   statusPanel: {
     marginTop: '20px',
     padding: '12px',
@@ -270,21 +376,22 @@ const styles = {
   statusLabel: { color: theme.textSecondary },
   statusOk: { color: '#4CAF50', fontWeight: 'bold' as const },
   statusBad: { color: '#FF6B6B', fontWeight: 'bold' as const },
-  diagnosticNote: {
-    marginTop: '10px',
-    padding: '8px',
-    fontSize: '0.75rem',
-    color: '#FFC107',
-    lineHeight: 1.5,
-    textAlign: 'left' as const,
-    background: 'rgba(255,193,7,0.08)',
-    borderRadius: '6px',
-  },
   hint: {
-  color: '#FFC107',
-  fontSize: '0.85rem',
-  marginTop: '12px',
-  marginBottom: '8px',
-  lineHeight: 1.4,
-},
+    color: '#FFC107',
+    fontSize: '0.85rem',
+    marginTop: '12px',
+    marginBottom: '8px',
+    lineHeight: 1.4,
+  },
+  modeToggle: { display: 'flex', gap: '8px', marginTop: '20px', justifyContent: 'center' },
+  modeButton: {
+    padding: '8px 16px',
+    border: `1px solid ${theme.borderFuture}`,
+    borderRadius: '20px',
+    cursor: 'pointer',
+    fontWeight: 'bold' as const,
+    fontSize: '0.85rem',
+  },
+  sliderWrap: { marginTop: '16px' },
+  slider: { width: '100%', marginTop: '8px' },
 };
